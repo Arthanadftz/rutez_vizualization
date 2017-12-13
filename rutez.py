@@ -2,14 +2,19 @@
 import os
 import pickle
 from collections import defaultdict
-from config import config
 import sqlite3
 
 
 class Rutez:
-    cache_folder = config.data_path
 
-    def __init__(self):
+    def __init__(self, cache_folder=None):
+        if cache_folder is None:
+            cache_folder = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                'data'
+            )
+
+        self.cache_folder = cache_folder
         self.word2sinsets = defaultdict(list)
         self.sinsets = defaultdict(lambda: {'words': [], 'relations': []})
 
@@ -58,8 +63,12 @@ class Rutez:
         with open(path, 'wb') as handle:
             pickle.dump(self.sinsets, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    def top_sinset(self, sinset):
-        pass
+    def top_sinsets(self):
+        result = []
+        for name, data in self.sinsets.items():
+            if not [r for r, s in data['relations'] if r == 'ВЫШЕ']:
+                result.append((name, data))
+        return result
 
     def upper_sinsets(self, sinset):
         result = []
